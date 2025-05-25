@@ -1,24 +1,12 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from 'react';
-import { FaPlay, FaPause, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
-import { BiSkipPrevious, BiSkipNext } from 'react-icons/bi';
 import styles from './sounds.module.css';
-
-
-
-interface ProgressBarProps {
-  currentTime: number;
-  duration: number;
-  onSeek: (time: number) => void;
-}
-
 
 export default function Sounds() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const lastSaveTimeRef = useRef(0);
@@ -29,37 +17,30 @@ export default function Sounds() {
     const loadSavedPosition = () => {
       const savedTime = localStorage.getItem('audioCurrentTime');
       const savedDuration = localStorage.getItem('audioDuration');
-      
       if (savedTime && savedDuration && audioRef.current) {
         const time = parseFloat(savedTime);
         const dur = parseFloat(savedDuration);
-        
         if (!isNaN(time) && !isNaN(dur)) {
           setDuration(dur);
           setIsMetadataLoaded(true);
           audioRef.current.currentTime = time;
           setCurrentTime(time);
-          console.log('Restored position:', time, 'duration:', dur);
         }
       }
     };
-
     loadSavedPosition();
   }, []);
 
   // Save position periodically while playing
   useEffect(() => {
     if (!isPlaying) return;
-
     const saveInterval = setInterval(() => {
       if (audioRef.current && Math.abs(currentTime - lastSaveTimeRef.current) >= 1) {
         localStorage.setItem('audioCurrentTime', currentTime.toString());
         localStorage.setItem('audioDuration', duration.toString());
         lastSaveTimeRef.current = currentTime;
-        console.log('Saved position:', currentTime, 'duration:', duration);
       }
     }, 1000);
-
     return () => clearInterval(saveInterval);
   }, [isPlaying, currentTime, duration]);
 
@@ -68,10 +49,7 @@ export default function Sounds() {
       if (isPlaying) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play().catch(error => {
-          console.error('Playback failed:', error);
-          setIsPlaying(false);
-        });
+        audioRef.current.play().catch(() => setIsPlaying(false));
       }
       setIsPlaying(!isPlaying);
     }
@@ -79,7 +57,6 @@ export default function Sounds() {
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressBarRef.current || !audioRef.current) return;
-    
     const rect = progressBarRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.min(Math.max(x / rect.width, 0), 1);
@@ -113,56 +90,6 @@ export default function Sounds() {
     }
   };
 
-  const ProgressBar = ({ currentTime, duration, onSeek }: ProgressBarProps) => {
-    const progressBarRef = useRef<HTMLDivElement>(null);
-    
-    const calculateProgress = () => {
-      if (!duration) return 0;
-      return (currentTime / duration) * 100;
-    };
-
-    const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!progressBarRef.current) return;
-      
-      const rect = progressBarRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percentage = Math.min(Math.max(x / rect.width, 0), 1);
-      const newTime = percentage * duration;
-      onSeek(newTime);
-    };
-
-    const formatRemainingTime = (time: number) => {
-      if (!isMetadataLoaded || isNaN(time) || time <= 0) return '--:--';
-      const minutes = Math.floor(time / 60);
-      const seconds = Math.floor(time % 60);
-      return `-${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    return (
-      <div className="progress-container">
-        <span className="time">{formatTime(currentTime)}</span>
-        <div 
-          className="p_playerSeekBarHolder"
-          ref={progressBarRef}
-          onClick={handleSeek}
-        >
-          <div className="p_bar">
-            <div 
-              className="p_progressBar"
-              style={{ 
-                width: `${calculateProgress()}%`,
-                transition: 'width 0.1s linear'
-              }}
-            >
-              <div className="seek-dot" />
-            </div>
-          </div>
-        </div>
-        <span className="time">{formatRemainingTime(duration - currentTime)}</span>
-      </div>
-    );
-  };
-
   // Format time to MM:SS
   const formatTime = (time: number) => {
     if (isNaN(time) || time < 0) return '0:00';
@@ -188,8 +115,7 @@ export default function Sounds() {
           >
             <div
               style={{
-                backgroundImage:
-                  "url()"
+                backgroundImage: "url()"
               }}
               className="sc-c-herospace__background-image gel-1/1"
             />
@@ -240,10 +166,6 @@ export default function Sounds() {
                         Benji B
                       </a>
                       <div className="sc-c-marquee--non-touch sc-c-marquee sc-c-herospace__details-titles-secondary">
-                        <style
-                          className="sc-c-marquee__style"
-                          dangerouslySetInnerHTML={{ __html: "" }}
-                        />
                         <div
                           className="sc-c-marquee__title gel-great-primer gs-u-pb- b-font-weight-500"
                           tabIndex={0}
@@ -254,7 +176,6 @@ export default function Sounds() {
                           <span className="sc-c-marquee__title-2" aria-hidden="true">
                             FKA Twigs enters Album Mode
                           </span>
-                          
                         </div>
                       </div>
                     </div>
@@ -274,11 +195,67 @@ export default function Sounds() {
                   height: "100%",
                   width: "100%",
                   paddingBottom: 0
-                  
                 }}
                 id="smphtml5iframesmp-wrapperwrp"
               >
-             
+                <div className="p_playerSeekBarHolder"
+  aria-hidden="false"
+  style={{ opacity: 1 }}
+  ref={progressBarRef}
+  onClick={handleSeek}
+>     <span className={styles.time}>{formatTime(currentTime)}</span>
+  <div className="p_bar p_seekBar">
+          <div 
+                          className={`${styles.progressBar} ${isPlaying ? styles.playingIndicator : ''}`}
+                          style={{ 
+                            width: `${isMetadataLoaded && duration > 0 ? (currentTime / duration) * 100 : 0}%`,
+                            backgroundColor: '#ff4400'
+                          }}
+                        >
+                          <div className={styles.seekDot} />
+                        </div>
+    
+  </div>
+  <div className="p_bar p_progressBar p_progressBarAvailable"></div>
+  
+  <div
+    className="p_bar p_progressBar"
+    style={{
+      width: (isMetadataLoaded && duration > 0 ? (currentTime / duration) * 100 : 0) + "%",
+      position: "absolute",
+      left: 0,
+      top: 0
+    }}
+  />
+  <button
+    className="p_button p_seekThumb"
+    title="Seek bar"
+    aria-label="Seek bar"
+    style={{
+      display: "block",
+      left: (isMetadataLoaded && duration > 0 ? (currentTime / duration) * 100 : 0) + "%",
+      position: "absolute",
+      transform: "translate(-50%, 0)"
+    }}
+    role="slider"
+    aria-valuemin={0}
+    aria-valuemax={duration}
+    aria-valuenow={currentTime}
+    aria-valuetext={`Playback time is ${formatTime(currentTime)} of ${formatTime(duration)}`}
+    tabIndex={0}
+    onMouseDown={e => e.stopPropagation()}
+  ><div
+      className="p_seekBarPositionLine"
+      style={{
+        display: "none",
+        left: ((currentTime / duration) * 100 || 0) + "%",
+        position: "absolute"
+      }}
+    />
+    <div className="p_seekThumbLine" />
+    <div className="p_seekThumbHalo" />
+  </button>
+</div>
                 <audio
                   ref={audioRef}
                   src="/audio/kugudhimay.mp3"
@@ -289,14 +266,12 @@ export default function Sounds() {
                       setDuration(audioDuration);
                       setIsMetadataLoaded(true);
                       localStorage.setItem('audioDuration', audioDuration.toString());
-                      console.log('Audio duration loaded:', audioDuration);
                     }
                   }}
                   onTimeUpdate={() => {
                     if (audioRef.current) {
                       const current = audioRef.current.currentTime;
                       setCurrentTime(current);
-                      console.log('Current time:', current, 'Duration:', duration);
                     }
                   }}
                   onEnded={() => {
@@ -305,10 +280,27 @@ export default function Sounds() {
                     localStorage.removeItem('audioCurrentTime');
                   }}
                 />
-                
                 <div className={styles.mediaContainer}>
                   <div className="control-group">
-                    
+
+                     <button
+        className="audioButton p_audioui_playlistButton disabled"
+        id="p_audioui_previousButton"
+        aria-label="Previous item"
+        aria-hidden="false"
+        disabled=""
+      >
+        <div className="p_audioButton_buttonInner">
+          <svg width={48} height={48} viewBox="0 0 48 48" focusable="false">
+            <path
+              id="p_audioui_previousButton_chevron"
+              className="p_audioui_playlistChevron"
+              d="M16.9954676,31.996911 L16.9954676,16.0004999 L18.495178,16.0004999 L18.495178,31.996911 L16.9954676,31.996911 Z M18.495178,23.9984555 L30.9927648,16 L30.9927648,20.0792123 L24.3585458,23.9984555 L30.9927648,27.9181986 L30.9927648,31.996911 L18.495178,23.9984555 Z"
+              focusable="false"
+            />
+          </svg>
+        </div>
+      </button>
                     <button
                       className="audioButton p_audioui_intervalButton"
                       id="p_audioui_backInterval"
@@ -327,7 +319,6 @@ export default function Sounds() {
                         <div className="p_audioui_iconNumber">10</div>
                       </div>
                     </button>
-
                     <button
                       className="audioButton"
                       id="p_audioui_playpause"
@@ -364,11 +355,9 @@ export default function Sounds() {
                             <rect x="26" y="24" width="6" height="20" />
                             <rect x="36" y="24" width="6" height="20" />
                           </g>
-                          
                         </svg>
                       </div>
                     </button>
-
                     <button
                       className="audioButton p_audioui_intervalButton"
                       id="p_audioui_forwardInterval"
@@ -387,110 +376,108 @@ export default function Sounds() {
                         <div className="p_audioui_iconNumber">10</div>
                       </div>
                     </button>
+                    <button
+  className="audioButton p_audioui_playlistButton"
+  id="p_audioui_nextButton"
+  aria-label="Next item"
+  aria-hidden="false"
+>
+  <div className="p_audioButton_buttonInner">
+    <svg width={48} height={48} viewBox="0 0 48 48" focusable="false">
+      <path
+        id="p_audioui_nextButton_chevron"
+        className="p_audioui_playlistChevron"
+        d="M29.5034828,32 L29.5034828,16 L31.0034828,16 L31.0034828,32 L29.5034828,32 Z M17.0034828,20.0803 L17.0034828,16.0003 L29.5034828,23.9998 L17.0034828,31.9998 L17.0034828,27.9203 L23.6399828,23.9998 L17.0034828,20.0803 Z"
+        focusable="false"
+      />
+    </svg>
+  </div>
+</button>
                   </div>
+                  // ...inside your return, replace the progress bar section with this...
 
-                  <div className={styles.progressContainer}>
-                    <span className={styles.time}>{formatTime(currentTime)}</span>
-                    <div 
-                      className={styles.playerSeekBarHolder}
-                      ref={progressBarRef}
-                      onClick={handleSeek}
-                    >
-                      <div className={styles.bar}>
-                        <div 
-                          className={`${styles.progressBar} ${isPlaying ? styles.playingIndicator : ''}`}
-                          style={{ 
-                            width: `${isMetadataLoaded && duration > 0 ? (currentTime / duration) * 100 : 0}%`,
-                            backgroundColor: '#ff4400'
-                          }}
-                        >
-                          <div className={styles.seekDot} />
-                        </div>
-                      </div>
-                    </div>
-                    <span className={styles.time}>
-                      {duration > 0 ? formatRemainingTime(duration - currentTime) : '--:--'}
-                    </span>
-                  </div>
+
+              
                 </div>
               </div>
             </div>
           </section>
-          <div>
-            <div className="sc-s-contrast">
-              <div className="sc-c-schedule sc-o-scrollable gs-u-pv gs-u-box-size">
-                <div className="gel-wrap">
-                  <ul className="sc-c-schedule__list gel-layout sc-u-flex-nowrap gs-u-ml0">
-                    <li className="sc-c-broadcast gel-layout__item gs-u-align-top gel-1/3@l sc-u-flex-nowrap sc-c-broadcast--onair gs-u-pl0">
-                      <div className="gel-layout sc-u-flex-nowrap gs-u-ml0 gel-layout--middle">
-                        <div className="sc-c-broadcast__meta sc-u-truncate">
-                          <p className="sc-u-truncate gel-1/1">
-                            <span className="gel-minion-bold sc-c-broadcast__meta-status">
-                              Now playing{/* */}:{" "}
-                            </span>
-                            <span className="gel-minion sc-c-broadcast__meta-time">
-                              23:00{/* */} – {/* */}01:00
-                            </span>
-                          </p>
-                          <p className="gel-pica-bold sc-u-truncate gel-1/1 gs-u-mt- gs-u-pr-alt+">
-                            {" "}
-                            {/* */}Benji B
-                          </p>
-                        </div>
+          <div className="sc-s-contrast">
+            <div className="sc-c-schedule sc-o-scrollable gs-u-pv gs-u-box-size">
+              <div className="gel-wrap">
+                <ul className="sc-c-schedule__list gel-layout sc-u-flex-nowrap gs-u-ml0">
+                  <li className="sc-c-broadcast gel-layout__item gs-u-align-top gel-1/3@l sc-u-flex-nowrap sc-c-broadcast--onair gs-u-pl0">
+                    <div className="gel-layout sc-u-flex-nowrap gs-u-ml0 gel-layout--middle">
+                      <div className="sc-c-broadcast__meta sc-u-truncate">
+                        <p className="sc-u-truncate gel-1/1">
+                          <span className="gel-minion-bold sc-c-broadcast__meta-status">
+                            Now playing{/* */}:{" "}
+                          </span>
+                          <span className="gel-minion sc-c-broadcast__meta-time">
+                            23:00{/* */} – {/* */}01:00
+                          </span>
+                        </p>
+                        <p className="gel-pica-bold sc-u-truncate gel-1/1 gs-u-mt- gs-u-pr-alt+">
+                          {" "}
+                          {/* */}Benji B
+                        </p>
                       </div>
-                    </li>
-                    <li className="sc-c-broadcast gel-layout__item gs-u-align-top gel-1/3@l sc-u-flex-nowrap sc-c-broadcast--next gs-u-ml gs-u-ml+@m gs-u-pl0">
-                      <div className="gel-layout sc-u-flex-nowrap gs-u-ml0 gel-layout--middle">
-                        <div className="sc-c-broadcast__meta sc-c-broadcast__meta-next gs-u-pl+ sc-u-truncate gel-layout__item">
-                          <p className="sc-u-truncate gel-1/1">
-                            <span className="gel-minion-bold sc-c-broadcast__meta-status">
-                              Next{/* */}:{" "}
-                            </span>
-                            <span className="gel-minion sc-c-broadcast__meta-time">
-                              01:00{/* */} – {/* */}01:30
-                            </span>
-                          </p>
-                          <p className="gel-pica-bold sc-u-truncate gel-1/1 gs-u-mt-">
-                            {" "}
-                            {/* */}Radio 1 Dance Presents...
-                          </p>
-                          <p className="gel-long-primer sc-u-truncate gel-1/1 gs-u-mt--">
-                            {" "}
-                            {/* */}DJ Mag Tips for 2025 – livwutang
-                          </p>
-                        </div>
+                    </div>
+                  </li>
+                  <li className="sc-c-broadcast gel-layout__item gs-u-align-top gel-1/3@l sc-u-flex-nowrap sc-c-broadcast--next gs-u-ml gs-u-ml+@m gs-u-pl0">
+                    <div className="gel-layout sc-u-flex-nowrap gs-u-ml0 gel-layout--middle">
+                      <div className="sc-c-broadcast__meta sc-c-broadcast__meta-next gs-u-pl+ sc-u-truncate gel-layout__item">
+                        <p className="sc-u-truncate gel-1/1">
+                          <span className="gel-minion-bold sc-c-broadcast__meta-status">
+                            Next{/* */}:{" "}
+                          </span>
+                          <span className="gel-minion sc-c-broadcast__meta-time">
+                            01:00{/* */} – {/* */}01:30
+                          </span>
+                        </p>
+                        <p className="gel-pica-bold sc-u-truncate gel-1/1 gs-u-mt-">
+                          {" "}
+                          {/* */}Radio 1 Dance Presents...
+                        </p>
+                        <p className="gel-long-primer sc-u-truncate gel-1/1 gs-u-mt--">
+                          {" "}
+                          {/* */}DJ Mag Tips for 2025 – livwutang
+                        </p>
                       </div>
-                    </li>
-                    <li className="sc-c-broadcast sc-c-broadcast--next gel-1/3@l gs-u-ml gs-u-ml+@m">
-                      <a
-                        className="sc-c-schedule__full-schedule sc-o-link--secondary gel-brevier-bold gs-u-display-block sc-o-link gs-u-p+ gs-u-mt"
-                        href="/sounds/schedules/bbc_radio_one"
-                        data-bbc-container="player-live"
-                        data-bbc-content-label="full-schedule"
-                        data-bbc-event-type="select"
-                        data-bbc-metadata='{"APP":"responsive::sounds","BID":"b00v4tv3"}'
-                        data-bbc-result="m00273vc"
-                        data-bbc-source="bbc_radio_one"
-                        data-bbc-client-routed="true"
+                    </div>
+                  </li>
+                  <li className="sc-c-broadcast sc-c-broadcast--next gel-1/3@l gs-u-ml gs-u-ml+@m">
+                    <a
+                      className="sc-c-schedule__full-schedule sc-o-link--secondary gel-brevier-bold gs-u-display-block sc-o-link gs-u-p+ gs-u-mt"
+                      href="/sounds/schedules/bbc_radio_one"
+                      data-bbc-container="player-live"
+                      data-bbc-content-label="full-schedule"
+                      data-bbc-event-type="select"
+                      data-bbc-metadata='{"APP":"responsive::sounds","BID":"b00v4tv3"}'
+                      data-bbc-result="m00273vc"
+                      data-bbc-source="bbc_radio_one"
+                      data-bbc-client-routed="true"
+                    >
+                      <svg
+                        width="24px"
+                        height="24px"
+                        viewBox="0 0 32 32"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="sc-c-icon--tv-schedule sc-c-icon sc-c-icon--primary sc-c-schedule__schedule-icon gs-u-align-middle"
+                        aria-hidden="true"
+                        focusable="false"
                       >
-                        <svg
-                          width="24px"
-                          height="24px"
-                          viewBox="0 0 32 32"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="sc-c-icon--tv-schedule sc-c-icon sc-c-icon--primary sc-c-schedule__schedule-icon gs-u-align-middle"
-                          aria-hidden="true"
-                          focusable="false"
-                        >
-                          <path d="M0 0h6v6H0zm0 10h6v6H0zm0 10h6v6H0zM8 0h24v6H8zm20.7 16H32v-6H8v6h9.3a9 9 0 0 0-2.8 4H8v6h6.5a9 9 0 1 0 14.2-10M23 30a7 7 0 1 1 7-7 7 7 0 0 1-7 7zM27.6 25.2L24 22.5V18h-2v5.5l4.4 3.3 1.2-1.6z" />
-                        </svg>
-                        <span className="sc-o-link__text sc-c-schedule__full-schedule-text gs-u-ml">
-                          Radio 1 Schedule
-                        </span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+                        <path d="M0 0h6v6H0zm0 10h6v6H0zm0 10h6v6H0zM8 0h24v6H8zm20.7 16H32v-6H8v6h9.3a9 9 0 0 0-2.8 4H8v6h6.5a9 9 0 1 0 14.2-10M23 30a7 7 0 1 1 7-7 7 7 0 0 1-7 7zM27.6 25.2L24 22.5V18h-2v5.5l4.4 3.3 1.2-1.6z" />
+                      </svg>
+                      <span className="sc-o-link__text sc-c-schedule__full-schedule-text gs-u-ml">
+                        Next one
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
