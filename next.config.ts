@@ -1,8 +1,9 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'export',
-  basePath: '/icasti',
-  trailingSlash: true,
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  images: {
+    domains: ["mohamedroyal.com"], // Add your new domain(s) here
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
