@@ -288,8 +288,7 @@ export default function Sounds() {
         id="p_audioui_previousButton"
         aria-label="Previous item"
         aria-hidden="false"
-        disabled=""
-      >
+        >
         <div className="p_audioButton_buttonInner">
           <svg width={48} height={48} viewBox="0 0 48 48" focusable="false">
             <path
