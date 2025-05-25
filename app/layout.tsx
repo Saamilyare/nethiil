@@ -20,32 +20,18 @@ export default function RootLayout({
         {/* CSS Files */}
      
         
-         
-     
-            <link
+         <link
           rel="stylesheet"
-          href="https://netbeins.com/CryptoWallet.css"
-        />
-            <link
-          rel="stylesheet"
-          href="https://netbeins.com/Dashboard.css"
-        />
-        {/* Fonts */}
-        <link
-          rel="preload"
-          href="https://static.files.bbci.co.uk/fonts/reith/2.512/BBCReithSans_W_Rg.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin=""
+          href="https://static.files.bbci.co.uk/sounds/web/sounds-web/css/sounds.b5f058e20032d7f8020f.css"
         />
         <link
-          rel="preload"
-          href="https://static.files.bbci.co.uk/fonts/reith/2.512/BBCReithSans_W_Bd.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin=""
+          rel="stylesheet"
+          href="https://static.files.bbci.co.uk/orbit/bde9d3f679d1dd3f8768859cc949031d/css/orbit-ltr.min.css"
         />
-<style></style>
+           <link
+          rel="stylesheet"
+          href="https://static.files.bbci.co.uk/sounds/web/sounds-web/css/sounds.b5f058e20032d7f8020f.css"
+        />
         {/* JavaScript Files */}
         <script src="https://nav.files.bbci.co.uk/orbit/3.0.0-536.85fa13b8/js/api.min.js" />
         <script src="https://static.files.bbci.co.uk/sounds/web/sounds-web/js/vendor.b5f058e20032d7f8020f.js" />
