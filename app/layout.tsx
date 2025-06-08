@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "RoyalTV - Stream Premium Content",
+  title: "icasti",
   description: "Watch premium videos and read exclusive articles",
 };
 
